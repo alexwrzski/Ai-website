@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef } from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
@@ -15,7 +15,7 @@ const CustomCKEditor = () => {
     editorRef.current = editor;
   };
 
-  const handleInsert = useCallback((type) => {
+  const handleInsert = (type) => {
     const editor = editorRef.current;
     if (!editor) return;
 
@@ -38,11 +38,10 @@ const CustomCKEditor = () => {
         token = '[[datecalc %%today%%+1m| F, j Y]]';
         break;
       default:
-        console.error('Unknown token type');
         return;
     }
     insertToken(editor, token);
-  }, []);
+  };
 
   return (
     <div className="p-4">
@@ -63,7 +62,7 @@ const CustomCKEditor = () => {
           console.log({ data });
         }}
       />
-      <style>{`
+      <style>{\`
         .token-block {
           background: #eef3ff;
           border: 1px dashed #6a6a6a;
@@ -73,7 +72,7 @@ const CustomCKEditor = () => {
           font-family: monospace;
           color: #333;
         }
-      `}</style>
+      \`}</style>
     </div>
   );
 };

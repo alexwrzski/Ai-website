@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CKEditor with Custom Tokens</title>
+  <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background-color: #2b2b2b;
+      font-family: Arial, sans-serif;
+    }
+
+    .editor-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .editor-card {
+      background-color: #3a3a3a;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+      width: 700px;
+    }
+
+    .editor-card h2 {
+      color: #fff;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .token-toolbar button {
+      margin: 5px;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 6px;
+      background-color: #69aaf9;
+      color: white;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    .token-toolbar button:hover {
+      background-color: #579be0;
+    }
+
+    .token-block {
+      background: #eef3ff;
+      border: 1px dashed #6a6a6a;
+      border-radius: 4px;
+      padding: 2px 6px;
+      display: inline-block;
+      font-family: monospace;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="editor-container">
+    <div class="editor-card">
+      <h2>CKEditor Token Editor</h2>
+      <div class="token-toolbar" id="toolbar"></div>
+      <div id="editor"></div>
+    </div>
+  </div>
+
+  <script>
+    ClassicEditor.create(document.querySelector('#editor'), {
+      toolbar: ['bold', 'italic']
+    }).then(editor => {
+      window.editor = editor;
+
+      const insertToken = (token) => {
+        const viewFragment = editor.data.processor.toView(`<span class='token-block'>${token}</span>`);
+        const modelFragment = editor.data.toModel(viewFragment);
+        editor.model.insertContent(modelFragment);
+      };
+
+      const createButton = (label, token) => {
+        const btn = document.createElement('button');
+        btn.innerText = label;
+        btn.onclick = () => insertToken(token);
+        document.getElementById('toolbar').appendChild(btn);
+      };
+
+      createButton('Insert Variable', '%%loanamount%%');
+      createButton('Insert Foreach', '[[foreach allclientsinfo as aci]]...[[/]]');
+      createButton('Insert ShowIf', '[[showif %%loanamount%% > 100]]...[[/]]');
+      createButton('Insert Calc', '[[calc %%loanamount%%*%%interestrate%%/%%loanterm%%|%]]');
+      createButton('Insert DateCalc', '[[datecalc %%today%%+1m| F, j Y]]');
+    });
+  </script>
+</body>
+</html>

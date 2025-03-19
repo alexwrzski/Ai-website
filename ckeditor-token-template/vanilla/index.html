@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CKEditor with Custom Tokens</title>
+  <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+  <style>
+    .token-block {
+      background: #eef3ff;
+      border: 1px dashed #6a6a6a;
+      border-radius: 4px;
+      padding: 2px 6px;
+      display: inline-block;
+      font-family: monospace;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h2>CKEditor with Mortgage Automator-style Tokens</h2>
+  <div id="toolbar"></div>
+  <div id="editor"></div>
+
+  <script>
+    ClassicEditor.create(document.querySelector('#editor'), {
+      toolbar: ['bold', 'italic']
+    }).then(editor => {
+      window.editor = editor;
+
+      const insertToken = (token) => {
+        const viewFragment = editor.data.processor.toView(`<span class='token-block'>${token}</span>`);
+        const modelFragment = editor.data.toModel(viewFragment);
+        editor.model.insertContent(modelFragment);
+      };
+
+      const createButton = (label, token) => {
+        const btn = document.createElement('button');
+        btn.innerText = label;
+        btn.onclick = () => insertToken(token);
+        document.getElementById('toolbar').appendChild(btn);
+      };
+
+      createButton('Insert Variable', '%%loanamount%%');
+      createButton('Insert Foreach', '[[foreach allclientsinfo as aci]]...[[/]]');
+      createButton('Insert ShowIf', '[[showif %%loanamount%% > 100]]...[[/]]');
+      createButton('Insert Calc', '[[calc %%loanamount%%*%%interestrate%%/%%loanterm%%|%]]');
+      createButton('Insert DateCalc', '[[datecalc %%today%%+1m| F, j Y]]');
+    });
+  </script>
+</body>
+</html>
