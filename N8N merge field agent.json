@@ -1,0 +1,41 @@
+{
+  "name": "Merge Field Translator AI Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "prompt": "You are a document transformation assistant. Your job is to convert templates written with common merge fields (like {{first_name}}, {{loan_amount}}, {{if condition}}, {{calc ...}}, etc.) into Mortgage Automator style syntax using the following conventions:\n\n- Replace all merge fields like {{first_name}} with %%aci.firstname%%\n- Replace {{last_name}} with %%aci.lastname%%\n- Replace {{loan_amount}} with %%loanamount%%\n- Replace conditionals like {{if loan_amount > 100}}...{{/if}} with [[showif %%loanamount%% > 100]]...[[/]]\n- Replace inline calculations like {{loan_amount * interest_rate}} with [[calc %%loanamount%% * %%interestrate%%]]\n- Replace date math expressions like {{today + 1 month}} with [[datecalc %%today%%+1m| F, j Y]]\n- For foreach loops, use [[foreach allclientsinfo as aci]]...[[/]]\n\nHere is a document template to convert:\n{{document_content}}\n\nReturn ONLY the converted content in plain text. Do not explain."
+      },
+      "name": "AI Prompt",
+      "type": "AI Prompt",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "message": "Paste your template content with {{merge fields}} and the AI agent will translate them into Mortgage Automator format."
+      },
+      "name": "Telegram Trigger",
+      "type": "Telegram Trigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json.chatId}}",
+        "text": "={{$json.translated}}"
+      },
+      "name": "Telegram Reply",
+      "type": "Telegram",
+      "typeVersion": 1,
+      "position": [650, 300]
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [[{"node": "AI Prompt", "type": "main", "index": 0}]]
+    },
+    "AI Prompt": {
+      "main": [[{"node": "Telegram Reply", "type": "main", "index": 0}]]
+    }
+  }
+}
