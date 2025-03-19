@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CKEditor + AI Merge Field Translator</title>
+  <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+  <style>
+    body {
+      background: #2b2b2b;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .editor-card {
+      background: #3a3a3a;
+      padding: 2rem;
+      border-radius: 12px;
+      width: 800px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.3);
+    }
+
+    .editor-card h2 {
+      color: #fff;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .editor-card button {
+      margin-top: 1rem;
+      background: #69aaf9;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      color: white;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .editor-card button:hover {
+      background-color: #4e97e1;
+    }
+
+    #translatedOutput {
+      margin-top: 1rem;
+      background: #eee;
+      padding: 10px;
+      border-radius: 6px;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="editor-card">
+    <h2>CKEditor - Merge Field Translator</h2>
+    <div id="editor"></div>
+    <button onclick="translateContent()">Translate to MA Format</button>
+    <pre id="translatedOutput">Translated content will appear here...</pre>
+  </div>
+
+  <script>
+    let editor;
+    ClassicEditor.create(document.querySelector('#editor'), {
+      toolbar: ['bold', 'italic', 'link', 'undo', 'redo']
+    }).then(ed => {
+      editor = ed;
+    });
+
+    async function translateContent() {
+      const content = editor.getData();
+      const prompt = `
+You are a document transformation assistant. Your job is to convert templates written with common merge fields (like {{first_name}}, {{loan_amount}}, {{if condition}}, {{calc ...}}, etc.) into Mortgage Automator style syntax using the following conventions:
+
+- Replace all merge fields like {{first_name}} with %%aci.firstname%%
+- Replace {{last_name}} with %%aci.lastname%%
+- Replace {{loan_amount}} with %%loanamount%%
+- Replace conditionals like {{if loan_amount > 100}}...{{/if}} with [[showif %%loanamount%% > 100]]...[[/]]
+- Replace inline calculations like {{loan_amount * interest_rate}} with [[calc %%loanamount%% * %%interestrate%%]]
+- Replace date math expressions like {{today + 1 month}} with [[datecalc %%today%%+1m| F, j Y]]
+- For foreach loops, use [[foreach allclientsinfo as aci]]...[[/]]
+
+Here is a document template to convert:
+${content}
+`;
+
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer YOUR_OPENAI_API_KEY"
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.2
+        })
+      });
+
+      const data = await response.json();
+      const translated = data.choices?.[0]?.message?.content || "Translation failed.";
+      document.getElementById("translatedOutput").textContent = translated;
+    }
+  </script>
+</body>
+</html>
