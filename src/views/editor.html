@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document Editor</title>
+  <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background-color: #2b2b2b;
+      font-family: Arial, sans-serif;
+    }
+
+    .navbar {
+      background-color: #3a3a3a;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .navbar h1 {
+      color: #fff;
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    .user-info {
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logout-btn {
+      background-color: #ff4444;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .logout-btn:hover {
+      background-color: #cc0000;
+    }
+
+    .editor-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: calc(100vh - 64px);
+      padding: 2rem;
+    }
+
+    .editor-card {
+      background-color: #3a3a3a;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+      width: 800px;
+    }
+
+    .editor-card h2 {
+      color: #fff;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .token-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background-color: #2b2b2b;
+      border-radius: 8px;
+    }
+
+    .token-toolbar button {
+      margin: 0;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      background-color: #69aaf9;
+      color: white;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .token-toolbar button:hover {
+      background-color: #579be0;
+    }
+
+    .token-block {
+      background: #eef3ff;
+      border: 1px dashed #6a6a6a;
+      border-radius: 4px;
+      padding: 2px 6px;
+      display: inline-block;
+      font-family: monospace;
+      color: #333;
+    }
+
+    .save-controls {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+    }
+
+    .save-btn {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .save-btn:hover {
+      background-color: #45a049;
+    }
+
+    .template-select {
+      padding: 8px;
+      border-radius: 4px;
+      background-color: #2b2b2b;
+      color: white;
+      border: 1px solid #4a4a4a;
+    }
+
+    .template-select option {
+      background-color: #2b2b2b;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <h1>Document Editor</h1>
+    <div class="user-info">
+      <span id="userEmail"></span>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="editor-container">
+    <div class="editor-card">
+      <h2>Document Editor</h2>
+      <select class="template-select" id="templateSelect" onchange="loadTemplate()">
+        <option value="">Select a template...</option>
+        <option value="loan">Loan Agreement</option>
+        <option value="contract">Service Contract</option>
+        <option value="invoice">Invoice</option>
+      </select>
+      <div class="token-toolbar" id="toolbar"></div>
+      <div id="editor"></div>
+      <div class="save-controls">
+        <button class="save-btn" onclick="saveDocument()">Save Document</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = 'index.html';
+    }
+
+    // Display user email
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    document.getElementById('userEmail').textContent = userData.email;
+
+    let editor;
+
+    ClassicEditor.create(document.querySelector('#editor'), {
+      toolbar: ['bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', 'insertTable', 'undo', 'redo']
+    }).then(newEditor => {
+      editor = newEditor;
+      window.editor = editor;
+
+      // Load template if one was selected
+      const currentTemplate = localStorage.getItem('currentTemplate');
+      if (currentTemplate) {
+        const template = JSON.parse(currentTemplate);
+        editor.setData(template.content);
+      }
+
+      const insertToken = (token) => {
+        const viewFragment = editor.data.processor.toView(`<span class='token-block'>${token}</span>`);
+        const modelFragment = editor.data.toModel(viewFragment);
+        editor.model.insertContent(modelFragment);
+      };
+
+      const createButton = (label, token) => {
+        const btn = document.createElement('button');
+        btn.innerText = label;
+        btn.onclick = () => insertToken(token);
+        document.getElementById('toolbar').appendChild(btn);
+      };
+
+      // Basic tokens
+      createButton('Variable', '%%variable%%');
+      createButton('Foreach', '[[foreach items as item]]...[[/]]');
+      createButton('ShowIf', '[[showif condition]]...[[/]]');
+      createButton('Calc', '[[calc expression|format]]');
+      createButton('DateCalc', '[[datecalc date+offset|format]]');
+
+      // Advanced tokens
+      createButton('User Info', '%%user.name%%');
+      createButton('Current Date', '%%today|F j, Y%%');
+      createButton('Conditional Text', '[[if %%value%% == "test"]]Yes[[else]]No[[/]]');
+      createButton('Loop Counter', '%%loop.index%%');
+      createButton('Math Function', '[[math round(%%value%%)]]');
+    });
+
+    function loadTemplate() {
+      const template = document.getElementById('templateSelect').value;
+      if (!template) return;
+
+      const templates = {
+        loan: `LOAN AGREEMENT
+
+This agreement is made between %%lender.name%% and %%borrower.name%%.
+
+Loan Amount: %%loan.amount%%
+Interest Rate: %%loan.rate%%
+Term: %%loan.term%% months
+
+[[foreach loan.payments as payment]]
+Payment Due: %%payment.date%%
+Amount: %%payment.amount%%
+[[/]]
+
+Total Interest: [[calc %%loan.amount%% * %%loan.rate%% * %%loan.term%% / 12|currency]]
+
+Date: %%today|F j, Y%%`,
+
+        contract: `SERVICE CONTRACT
+
+Contract ID: %%contract.id%%
+Client: %%client.name%%
+Service: %%service.type%%
+
+[[foreach service.items as item]]
+- %%item.description%%: %%item.price%%
+[[/]]
+
+Total Amount: [[calc sum(%%service.items.price%%)|currency]]
+
+Valid until: [[datecalc %%today%%+1y|F j, Y]]`,
+
+        invoice: `INVOICE
+
+Invoice #: %%invoice.number%%
+Date: %%today|F j, Y%%
+Due Date: [[datecalc %%today%%+30d|F j, Y]]
+
+Bill To:
+%%client.name%%
+%%client.address%%
+
+[[foreach invoice.items as item]]
+%%item.description%%: %%item.quantity%% x %%item.price%% = [[calc %%item.quantity%% * %%item.price%%|currency]]
+[[/]]
+
+Subtotal: [[calc sum(%%invoice.items.price%%)|currency]]
+Tax: [[calc %%invoice.subtotal%% * 0.1|currency]]
+Total: [[calc %%invoice.subtotal%% + %%invoice.tax%%|currency]]`
+      };
+
+      editor.setData(templates[template]);
+    }
+
+    function saveDocument() {
+      const content = editor.getData();
+      // Here you would typically send the content to your backend
+      alert('Document saved successfully!');
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userData');
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html> 

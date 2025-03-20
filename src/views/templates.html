@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Builder</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #2b2b2b;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: #3a3a3a;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+
+        .navbar h1 {
+            color: #fff;
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .user-info {
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background-color: rgba(255, 68, 68, 0.1);
+            color: #ff4444;
+            border: 1px solid rgba(255, 68, 68, 0.2);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(255, 68, 68, 0.2);
+            border-color: rgba(255, 68, 68, 0.3);
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #333;
+            padding: 1rem;
+            overflow-y: auto;
+            border-right: none;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #444;
+        }
+
+        .sidebar-header h2 {
+            color: #fff;
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .add-template-btn {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.2);
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .add-template-btn:hover {
+            background-color: rgba(76, 175, 80, 0.2);
+            border-color: rgba(76, 175, 80, 0.3);
+        }
+
+        .template-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .container-list-item {
+            padding: 0.75rem;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            transition: background-color 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .container-list-item:hover {
+            background-color: #444;
+        }
+
+        .container-list-item.active {
+            background-color: #4a4a4a;
+        }
+
+        .container-name {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .container-count {
+            background-color: #4a4a4a;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #ccc;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .content-header h2 {
+            color: #fff;
+            margin: 0;
+        }
+
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .template-card {
+            background-color: #3a3a3a;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .template-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .template-card h3 {
+            color: #fff;
+            margin: 0 0 1rem 0;
+        }
+
+        .template-card p {
+            color: #ccc;
+            margin: 0 0 1.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .template-details {
+            background-color: #3a3a3a;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .template-details h2 {
+            color: #fff;
+            margin: 0 0 1rem 0;
+        }
+
+        .template-content {
+            background-color: #2b2b2b;
+            padding: 1rem;
+            border-radius: 4px;
+            color: #ccc;
+            font-family: monospace;
+            margin: 1rem 0;
+            white-space: pre-wrap;
+        }
+
+        .template-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            background-color: transparent;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .preview-btn {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .preview-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .delete-btn {
+            display: none;
+        }
+
+        .use-btn {
+            color: #4CAF50;
+            border-color: rgba(76, 175, 80, 0.2);
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+
+        .use-btn:hover {
+            background-color: rgba(76, 175, 80, 0.2);
+            border-color: rgba(76, 175, 80, 0.3);
+        }
+
+        /* Modal styles remain the same */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #3a3a3a;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            color: #fff;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            color: #ccc;
+            opacity: 1;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #4a4a4a;
+            border-radius: 4px;
+            background-color: #2b2b2b;
+            color: #fff;
+        }
+
+        .form-group textarea {
+            height: 200px;
+            resize: vertical;
+        }
+
+        .save-template-btn {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.2);
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .save-template-btn:hover {
+            background-color: rgba(76, 175, 80, 0.2);
+            border-color: rgba(76, 175, 80, 0.3);
+        }
+
+        .search-bar {
+            margin-bottom: 1rem;
+            width: 100%;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 12px;
+            padding-left: 32px;
+            border: 1px solid #4a4a4a;
+            border-radius: 4px;
+            background-color: #2b2b2b;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        .container-actions {
+            position: absolute;
+            right: 8px;
+            display: none;
+            gap: 0.5rem;
+        }
+
+        .container-list-item:hover .container-actions {
+            display: flex;
+        }
+
+        .container-action-btn {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            padding: 4px;
+            opacity: 0.7;
+            transition: all 0.2s ease;
+        }
+
+        .container-action-btn:hover {
+            color: #ccc;
+            opacity: 1;
+        }
+
+        .drag-handle {
+            cursor: move;
+            color: #666;
+            margin-right: 8px;
+        }
+
+        .template-preview {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .preview-content-wrapper {
+            background-color: #3a3a3a;
+            margin: 2vh auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #444;
+            flex-shrink: 0;
+        }
+
+        .preview-header h3 {
+            color: #fff;
+            margin: 0;
+        }
+
+        .preview-content {
+            background-color: #2b2b2b;
+            padding: 2rem;
+            width: 100%;
+            max-width: none;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        .preview-content .page {
+            background-color: white;
+            width: 8.5in;
+            min-height: 11in;
+            height: 11in;
+            padding: 1in;
+            margin: 0 auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            color: #333;
+            font-family: Arial, sans-serif;
+            font-size: 12pt;
+            line-height: 1.5;
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+
+        .preview-content .page p {
+            margin: 0 0 1em 0;
+            max-width: 100%;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .edit-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .edit-content-wrapper {
+            background-color: #3a3a3a;
+            margin: 2vh auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .edit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #444;
+            flex-shrink: 0;
+        }
+
+        .edit-header h3 {
+            color: #fff;
+            margin: 0;
+        }
+
+        .edit-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .edit-form input {
+            background-color: #2b2b2b;
+            border: 1px solid #4a4a4a;
+            border-radius: 4px;
+            padding: 8px 12px;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .edit-form .editor-container {
+            flex: 1;
+            min-height: 0;
+            background-color: #2b2b2b;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .edit-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-shrink: 0;
+        }
+
+        .save-edit-btn {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.2);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex: 1;
+        }
+
+        .save-edit-btn:hover {
+            background-color: rgba(76, 175, 80, 0.2);
+            border-color: rgba(76, 175, 80, 0.3);
+        }
+
+        .cancel-edit-btn {
+            background-color: rgba(255, 68, 68, 0.1);
+            color: #ff4444;
+            border: 1px solid rgba(255, 68, 68, 0.2);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex: 1;
+        }
+
+        .cancel-edit-btn:hover {
+            background-color: rgba(255, 68, 68, 0.2);
+            border-color: rgba(255, 68, 68, 0.3);
+        }
+
+        .templates-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .template-item {
+            background-color: #3a3a3a;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .template-item:hover {
+            background-color: #444;
+        }
+
+        .template-item-info {
+            flex: 1;
+        }
+
+        .template-item h3 {
+            color: #fff;
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .template-item p {
+            display: none;
+        }
+
+        .template-actions {
+            display: flex;
+            gap: 0.5rem;
+            opacity: 0.7;
+        }
+
+        .template-item:hover .template-actions {
+            opacity: 1;
+        }
+
+        .mode-switch {
+            display: flex;
+            gap: 1rem;
+            margin-left: auto;
+            padding-right: 3rem;
+            z-index: 2;
+        }
+
+        .mode-btn {
+            background: none;
+            border: none;
+            color: #888;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 1rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .mode-btn.active {
+            color: #fff;
+            background-color: #444;
+        }
+
+        .mode-btn:hover:not(.active) {
+            color: #ccc;
+            background-color: #3a3a3a;
+        }
+
+        .preview-edit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            position: relative;
+            padding: 0 1rem;
+        }
+
+        .preview-edit-header h3 {
+            color: #fff;
+            margin: 0;
+            flex: 1;
+        }
+
+        .preview-edit-body {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            background-color: #2b2b2b;
+        }
+
+        #editMode {
+            display: none;
+            height: 100%;
+            padding: 0 1rem;
+            overflow-y: auto;
+        }
+
+        #editMode.active {
+            display: block;
+        }
+
+        .editor-container {
+            height: 100%;
+            min-height: 0;
+            background-color: #2b2b2b;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0;
+            width: 100%;
+        }
+
+        .ck-editor {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ck-editor__editable {
+            flex: 1;
+            min-height: calc(95vh - 250px) !important;
+            max-height: calc(95vh - 250px) !important;
+            width: 100% !important;
+            max-width: none !important;
+            margin: 0 auto !important;
+            background-color: #2b2b2b !important;
+            color: #fff !important;
+            font-family: monospace !important;
+            font-size: 14px !important;
+            white-space: pre-wrap !important;
+        }
+
+        .template-footer {
+            padding: 1rem;
+            border-top: 1px solid #444;
+            margin-top: 1rem;
+        }
+
+        .footer-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .footer-option input[type="checkbox"] {
+            margin: 0;
+        }
+
+        .template-actions-footer {
+            display: flex;
+            justify-content: flex-start;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .template-action-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            border: none;
+            width: 100%;
+            text-align: center;
+        }
+
+        .update-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .preview-edit-wrapper {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        .preview-edit-content {
+            background-color: #2b2b2b;
+            margin: 0 auto;
+            padding: 1.5rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 1400px;
+            height: calc(95vh - 4rem);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .preview-edit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            position: relative;
+            padding: 0 1rem;
+        }
+
+        .preview-edit-header h3 {
+            color: #fff;
+            margin: 0;
+            flex: 1;
+        }
+
+        .mode-switch {
+            display: flex;
+            gap: 1rem;
+            margin-left: auto;
+            padding-right: 3rem;
+            z-index: 2;
+        }
+
+        .mode-btn {
+            background: none;
+            border: none;
+            color: #888;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 1rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .mode-btn.active {
+            color: #fff;
+            background-color: #444;
+        }
+
+        .mode-btn:hover:not(.active) {
+            color: #ccc;
+            background-color: #3a3a3a;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: all 0.2s ease;
+            position: absolute;
+            top: -1rem;
+            right: -1rem;
+            padding: 0.5rem;
+            z-index: 2;
+        }
+
+        .preview-edit-body {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+        }
+
+        #previewMode {
+            display: none;
+            padding: 2rem;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background-color: #2b2b2b;
+            display: flex;
+            justify-content: center;
+        }
+
+        #previewMode.active {
+            display: flex;
+        }
+
+        .preview-content {
+            background-color: #2b2b2b;
+            padding: 2rem;
+            width: fit-content;
+            max-width: none;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        .preview-content .page {
+            background-color: white;
+            width: 8.5in;
+            min-height: 11in;
+            height: 11in;
+            padding: 1in;
+            margin: 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            color: #333;
+            font-family: Arial, sans-serif;
+            font-size: 12pt;
+            line-height: 1.5;
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+
+        .preview-edit-content {
+            background-color: #2b2b2b;
+            margin: 0 auto;
+            padding: 1.5rem;
+            border-radius: 8px;
+            width: 95%;
+            max-width: 1400px;
+            height: calc(95vh - 4rem);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .preview-edit-body {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            background-color: #2b2b2b;
+        }
+
+        @media print {
+            body, #previewMode {
+                background: none;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .preview-content {
+                background: none;
+                padding: 0;
+                gap: 0;
+            }
+
+            .preview-content .page {
+                margin: 0;
+                padding: 1in;
+                box-shadow: none;
+                page-break-after: always;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>Document Builder</h1>
+        <div class="user-info">
+            <span id="userEmail"></span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Containers</h2>
+                <button class="add-template-btn" onclick="showAddContainerModal()">Add Container</button>
+            </div>
+            <div class="search-bar">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Search templates..." oninput="handleSearch(event)">
+            </div>
+            <ul class="template-list" id="containerList">
+                <!-- Containers will be listed here -->
+            </ul>
+        </div>
+
+        <div class="content-area">
+            <div class="content-header">
+                <h2 id="currentContainer">Select a container</h2>
+                <button class="add-template-btn" onclick="showAddTemplateModal()">Add Template</button>
+            </div>
+            <ul class="templates-list" id="templatesList">
+                <!-- Templates will be listed here -->
+            </ul>
+        </div>
+
+        <!-- Preview/Edit Modal -->
+        <div id="previewEditModal" class="preview-edit-wrapper">
+            <div class="preview-edit-content">
+                <div class="preview-edit-header">
+                    <h3 id="templateTitle" class="editable-title" onclick="makeEditable(this)"></h3>
+                    <div class="mode-switch">
+                        <button class="mode-btn active" onclick="switchMode('preview')">Preview</button>
+                        <button class="mode-btn" onclick="switchMode('edit')">Edit</button>
+                    </div>
+                    <button class="close-btn" onclick="closePreviewEdit()">&times;</button>
+                </div>
+                <div class="preview-edit-body">
+                    <div id="previewMode" class="active">
+                        <div class="preview-content"></div>
+                    </div>
+                    <div id="editMode">
+                        <form class="edit-form" onsubmit="handleEditTemplate(event)">
+                            <div class="editor-container">
+                                <div id="editor"></div>
+                            </div>
+                            <div class="template-footer">
+                                <div class="footer-options">
+                                    <label class="footer-option">
+                                        <input type="checkbox" id="showPageNumbers">
+                                        show Page Numbers in footer
+                                    </label>
+                                    <label class="footer-option">
+                                        <input type="checkbox" id="showBorInitials">
+                                        show "Bor. initials" box in footer
+                                    </label>
+                                    <label class="footer-option">
+                                        <input type="checkbox" id="showInvInitials">
+                                        show "Inv. initials" box in footer
+                                    </label>
+                                </div>
+                                <div class="template-actions-footer">
+                                    <button type="button" class="template-action-btn update-btn" onclick="handleUpdate()">Update</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Container Modal -->
+    <div id="addContainerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Container</h2>
+                <button class="close-btn" onclick="hideAddContainerModal()">&times;</button>
+            </div>
+            <form id="addContainerForm" onsubmit="handleAddContainer(event)">
+                <div class="form-group">
+                    <label for="containerName">Container Name</label>
+                    <input type="text" id="containerName" required>
+                </div>
+                <button type="submit" class="save-template-btn">Create Container</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Template Modal -->
+    <div id="addTemplateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Template</h2>
+                <button class="close-btn" onclick="hideAddTemplateModal()">&times;</button>
+            </div>
+            <form id="addTemplateForm" onsubmit="handleAddTemplate(event)">
+                <div class="form-group">
+                    <label for="templateName">Template Name</label>
+                    <input type="text" id="templateName" required>
+                </div>
+                <div class="form-group">
+                    <label for="templateDescription">Description</label>
+                    <input type="text" id="templateDescription" required>
+                </div>
+                <div class="form-group">
+                    <label for="templateContent">Template Content</label>
+                    <textarea id="templateContent" required></textarea>
+                </div>
+                <button type="submit" class="save-template-btn">Save Template</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/classic/ckeditor.js"></script>
+    <script>
+        // Check if user is logged in
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'index.html';
+        }
+
+        // Display user email
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        document.getElementById('userEmail').textContent = userData.email;
+
+        // Sample containers and templates data
+        const containers = [
+            {
+                id: 1,
+                name: 'Loan Documents',
+                templates: [
+                    {
+                        id: 1,
+                        name: 'Loan Agreement',
+                        description: 'Standard loan agreement template with variable fields',
+                        content: `LOAN AGREEMENT\n\nThis agreement is made between %%lender.name%% and %%borrower.name%%.\n\nLoan Amount: %%loan.amount%%\nInterest Rate: %%loan.rate%%\nTerm: %%loan.term%% months`
+                    },
+                    {
+                        id: 2,
+                        name: 'Loan Application',
+                        description: 'Loan application form template',
+                        content: `LOAN APPLICATION\n\nApplicant: %%applicant.name%%\nAmount Requested: %%loan.amount%%`
+                    }
+                ]
+            },
+            {
+                id: 2,
+                name: 'Service Agreements',
+                templates: [
+                    {
+                        id: 3,
+                        name: 'Service Contract',
+                        description: 'Professional service contract template',
+                        content: `SERVICE CONTRACT\n\nContract ID: %%contract.id%%\nClient: %%client.name%%\nService: %%service.type%%`
+                    }
+                ]
+            },
+            {
+                id: 3,
+                name: 'Invoices & Billing',
+                templates: [
+                    {
+                        id: 4,
+                        name: 'Invoice',
+                        description: 'Detailed invoice template with calculations',
+                        content: `INVOICE\n\nInvoice #: %%invoice.number%%\nDate: %%today|F j, Y%%\nDue Date: [[datecalc %%today%%+30d|F j, Y]]`
+                    }
+                ]
+            }
+        ];
+
+        let selectedContainerId = null;
+        let editor;
+        let currentEditingTemplate = null;
+
+        // Render container list
+        function renderContainerList(containersList = containers) {
+            const list = document.getElementById('containerList');
+            list.innerHTML = containersList.map(container => `
+                <li class="container-list-item ${container.id === selectedContainerId ? 'active' : ''}"
+                    onclick="selectContainer(${container.id})">
+                    <span class="container-name">
+                        <i class="fas fa-grip-vertical drag-handle"></i>
+                        <i class="fas fa-folder"></i>
+                        ${container.name}
+                    </span>
+                    <span class="container-count">${container.templates.length}</span>
+                    <div class="container-actions">
+                        <button class="container-action-btn" onclick="editContainer(${container.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="container-action-btn" onclick="deleteContainer(${container.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </li>
+            `).join('');
+        }
+
+        // Render templates list
+        function renderTemplatesList(containerId, containersList = containers) {
+            const container = containersList.find(c => c.id === containerId);
+            const list = document.getElementById('templatesList');
+            const containerTitle = document.getElementById('currentContainer');
+            
+            if (!container) {
+                containerTitle.textContent = 'Select a container';
+                list.innerHTML = '<p style="color: #ccc;">Choose a container from the sidebar to view its templates</p>';
+                return;
+            }
+
+            containerTitle.textContent = container.name;
+            list.innerHTML = container.templates.map(template => `
+                <li class="template-item" onclick="openPreviewEdit(${containerId}, ${template.id})">
+                    <div class="template-item-info">
+                        <h3>${template.name}</h3>
+                    </div>
+                </li>
+            `).join('');
+        }
+
+        // Select container
+        function selectContainer(id) {
+            selectedContainerId = id;
+            renderContainerList();
+            renderTemplatesList(id);
+        }
+
+        // Modal functions
+        function showAddContainerModal() {
+            document.getElementById('addContainerModal').style.display = 'block';
+        }
+
+        function hideAddContainerModal() {
+            document.getElementById('addContainerModal').style.display = 'none';
+        }
+
+        function showAddTemplateModal() {
+            if (!selectedContainerId) {
+                alert('Please select a container first');
+                return;
+            }
+            document.getElementById('addTemplateModal').style.display = 'block';
+        }
+
+        function hideAddTemplateModal() {
+            document.getElementById('addTemplateModal').style.display = 'none';
+        }
+
+        // Container management
+        function handleAddContainer(event) {
+            event.preventDefault();
+            const name = document.getElementById('containerName').value;
+
+            const newContainer = {
+                id: containers.length + 1,
+                name,
+                templates: []
+            };
+            containers.push(newContainer);
+
+            renderContainerList();
+            selectContainer(newContainer.id);
+            hideAddContainerModal();
+            event.target.reset();
+        }
+
+        // Template management
+        function handleAddTemplate(event) {
+            event.preventDefault();
+            const name = document.getElementById('templateName').value;
+            const description = document.getElementById('templateDescription').value;
+            const content = document.getElementById('templateContent').value;
+
+            const container = containers.find(c => c.id === selectedContainerId);
+            if (!container) return;
+
+            const newTemplate = {
+                id: Math.max(0, ...container.templates.map(t => t.id)) + 1,
+                name,
+                description,
+                content
+            };
+            container.templates.push(newTemplate);
+
+            renderContainerList();
+            renderTemplatesList(selectedContainerId);
+            hideAddTemplateModal();
+            event.target.reset();
+        }
+
+        function editTemplate(containerId, templateId) {
+            const container = containers.find(c => c.id === containerId);
+            if (!container) return;
+
+            const template = container.templates.find(t => t.id === templateId);
+            if (!template) return;
+
+            currentEditingTemplate = { containerId, templateId };
+            
+            // Populate form fields
+            document.getElementById('editTemplateName').value = template.name;
+            document.getElementById('editTemplateDescription').value = template.description;
+            editor.setData(template.content);
+
+            // Show modal
+            document.getElementById('editTemplateModal').style.display = 'block';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editTemplateModal').style.display = 'none';
+            currentEditingTemplate = null;
+        }
+
+        function handleEditTemplate(event) {
+            event.preventDefault();
+            if (!currentEditingTemplate) return;
+
+            const { containerId, templateId } = currentEditingTemplate;
+            const container = containers.find(c => c.id === containerId);
+            if (!container) return;
+
+            const template = container.templates.find(t => t.id === templateId);
+            if (!template) return;
+
+            // Update template content
+            template.content = editor.getData();
+
+            // Refresh display
+            renderTemplatesList(containerId);
+            switchMode('preview');
+        }
+
+        function deleteTemplate(containerId, templateId) {
+            const container = containers.find(c => c.id === containerId);
+            if (!container) return;
+
+            if (confirm('Are you sure you want to delete this template?')) {
+                const index = container.templates.findIndex(t => t.id === templateId);
+                if (index !== -1) {
+                    container.templates.splice(index, 1);
+                    renderContainerList();
+                    renderTemplatesList(containerId);
+                }
+            }
+        }
+
+        function useTemplate(containerId, templateId) {
+            const container = containers.find(c => c.id === containerId);
+            if (!container) return;
+
+            const template = container.templates.find(t => t.id === templateId);
+            if (template) {
+                localStorage.setItem('currentTemplate', JSON.stringify(template));
+                window.location.href = 'editor.html';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userData');
+            window.location.href = 'index.html';
+        }
+
+        // Add Font Awesome for icons
+        const fontAwesome = document.createElement('link');
+        fontAwesome.rel = 'stylesheet';
+        fontAwesome.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
+        document.head.appendChild(fontAwesome);
+
+        // Enable drag and drop for containers
+        new Sortable(document.getElementById('containerList'), {
+            animation: 150,
+            handle: '.drag-handle',
+            onEnd: function(evt) {
+                const container = containers.splice(evt.oldIndex, 1)[0];
+                containers.splice(evt.newIndex, 0, container);
+                renderContainerList();
+            }
+        });
+
+        // Search functionality
+        function handleSearch(event) {
+            const searchTerm = event.target.value.toLowerCase();
+            const filteredContainers = containers.map(container => ({
+                ...container,
+                templates: container.templates.filter(template => 
+                    template.name.toLowerCase().includes(searchTerm) ||
+                    template.description.toLowerCase().includes(searchTerm) ||
+                    template.content.toLowerCase().includes(searchTerm)
+                )
+            })).filter(container => container.templates.length > 0);
+
+            renderContainerList(filteredContainers);
+            if (selectedContainerId) {
+                renderTemplatesList(selectedContainerId, filteredContainers);
+            }
+        }
+
+        function openPreviewEdit(containerId, templateId) {
+            const container = containers.find(c => c.id === containerId);
+            if (!container) return;
+
+            const template = container.templates.find(t => t.id === templateId);
+            if (!template) return;
+
+            currentEditingTemplate = { containerId, templateId };
+            
+            // Set template title
+            document.getElementById('templateTitle').textContent = template.name;
+            
+            // Set preview content as formatted HTML
+            document.querySelector('.preview-content').innerHTML = template.content;
+            
+            // Set editor content as raw HTML
+            editor.setData(template.content);
+
+            // Show modal
+            document.getElementById('previewEditModal').style.display = 'block';
+            switchMode('preview'); // Default to preview mode
+        }
+
+        function closePreviewEdit() {
+            document.getElementById('previewEditModal').style.display = 'none';
+            currentEditingTemplate = null;
+        }
+
+        function switchMode(mode) {
+            // Update mode buttons
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase() === mode) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Update content visibility
+            const previewMode = document.getElementById('previewMode');
+            const editMode = document.getElementById('editMode');
+            
+            // First hide both modes
+            previewMode.style.display = 'none';
+            editMode.style.display = 'none';
+            
+            // Then show the selected mode
+            if (mode === 'preview') {
+                previewMode.style.display = 'flex';
+                editMode.style.display = 'none';
+                
+                if (editor) {
+                    const content = editor.getData();
+                    const previewContent = document.querySelector('.preview-content');
+                    
+                    // Create a temporary container to measure content
+                    const measureContainer = document.createElement('div');
+                    measureContainer.style.cssText = `
+                        width: 6.5in;
+                        min-height: 9in;
+                        height: 9in;
+                        padding: 0;
+                        margin: 0;
+                        visibility: hidden;
+                        position: fixed;
+                        top: -9999px;
+                        left: -9999px;
+                        overflow: hidden;
+                        font-family: Arial, sans-serif;
+                        font-size: 12pt;
+                        line-height: 1.5;
+                    `;
+                    document.body.appendChild(measureContainer);
+                    
+                    // Split content into paragraphs
+                    const paragraphs = content.split(/<p[^>]*>|<\/p>/).filter(p => p.trim());
+                    
+                    let pages = [];
+                    let currentPage = [];
+                    
+                    for (const paragraph of paragraphs) {
+                        measureContainer.innerHTML = [...currentPage, paragraph].join('<p>') + '</p>';
+                        
+                        if (measureContainer.scrollHeight > measureContainer.clientHeight && currentPage.length > 0) {
+                            // Current paragraph would overflow, start a new page
+                            pages.push(currentPage.join('<p>') + '</p>');
+                            currentPage = [paragraph];
+                        } else {
+                            currentPage.push(paragraph);
+                        }
+                    }
+                    
+                    // Add the last page if it has content
+                    if (currentPage.length > 0) {
+                        pages.push(currentPage.join('<p>') + '</p>');
+                    }
+                    
+                    // Remove the measure container
+                    document.body.removeChild(measureContainer);
+                    
+                    // Create page divs
+                    previewContent.innerHTML = pages.map(pageContent => 
+                        `<div class="page">${pageContent}</div>`
+                    ).join('');
+                }
+            } else {
+                previewMode.style.display = 'none';
+                editMode.style.display = 'block';
+            }
+        }
+
+        // Container management
+        function editContainer(id) {
+            event.stopPropagation();
+            const container = containers.find(c => c.id === id);
+            if (!container) return;
+
+            const newName = prompt('Enter new container name:', container.name);
+            if (newName && newName !== container.name) {
+                container.name = newName;
+                renderContainerList();
+                if (selectedContainerId === id) {
+                    renderTemplatesList(id);
+                }
+            }
+        }
+
+        function deleteContainer(id) {
+            event.stopPropagation();
+            const container = containers.find(c => c.id === id);
+            if (!container) return;
+
+            if (confirm(`Are you sure you want to delete "${container.name}" and all its templates?`)) {
+                const index = containers.findIndex(c => c.id === id);
+                if (index !== -1) {
+                    containers.splice(index, 1);
+                    if (selectedContainerId === id) {
+                        selectedContainerId = null;
+                    }
+                    renderContainerList();
+                    renderTemplatesList(selectedContainerId);
+                }
+            }
+        }
+
+        // Initialize CKEditor with custom configuration
+        ClassicEditor
+            .create(document.querySelector('#editor'), {
+                toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote'],
+                placeholder: 'Enter template content here...',
+                removePlugins: ['CKFinderUploadAdapter', 'CKFinder', 'EasyImage', 'Image', 'ImageCaption', 'ImageStyle', 'ImageToolbar', 'ImageUpload'],
+            })
+            .then(newEditor => {
+                editor = newEditor;
+                // Configure editor for code editing
+                editor.editing.view.change(writer => {
+                    writer.setStyle('font-family', 'monospace', editor.editing.view.document.getRoot());
+                });
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+        // Initial render
+        renderContainerList();
+
+        function makeEditable(element) {
+            const currentText = element.textContent;
+            element.contentEditable = true;
+            element.classList.add('editing');
+            element.focus();
+
+            function saveEdit() {
+                element.contentEditable = false;
+                element.classList.remove('editing');
+                if (currentEditingTemplate && element.textContent !== currentText) {
+                    const { containerId, templateId } = currentEditingTemplate;
+                    const container = containers.find(c => c.id === containerId);
+                    if (!container) return;
+
+                    const template = container.templates.find(t => t.id === templateId);
+                    if (!template) return;
+
+                    template.name = element.textContent;
+                    renderTemplatesList(containerId);
+                }
+            }
+
+            element.addEventListener('blur', saveEdit);
+            element.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    element.blur();
+                }
+                if (e.key === 'Escape') {
+                    element.textContent = currentText;
+                    element.blur();
+                }
+            });
+        }
+
+        function handleUpdate() {
+            if (editor) {
+                const content = editor.getData();
+                if (currentEditingTemplate) {
+                    const { containerId, templateId } = currentEditingTemplate;
+                    const container = containers.find(c => c.id === containerId);
+                    if (!container) return;
+
+                    const template = container.templates.find(t => t.id === templateId);
+                    if (!template) return;
+
+                    // Update template content
+                    template.content = content;
+                    
+                    // Switch to preview mode
+                    switchMode('preview');
+                }
+            }
+        }
+    </script>
+</body>
+</html> 
